@@ -8,6 +8,7 @@ extends CharacterBody3D
 @onready var model_body: Node3D = $ModelBody
 @onready var fish_model: Node3D = $ModelBody/FishModel
 @onready var fish_animation: AnimationPlayer = $ModelBody/FishModel/FishAnimation
+@onready var fish_animation_tree: AnimationTree = $ModelBody/FishModel/FishAnimationTree
 
 @export var gravity := 50.0
 @export var bouyancy := 80.0
@@ -292,6 +293,8 @@ func water_movement(delta):
 	#velocity.z = direction_ground.z * speed * delta
 
 func update_model():
+	var state_machine = fish_animation_tree["parameters/playback"]
+
 	var direction = Input.get_vector("right", "left", "back", "forward")
 	if direction:
 		#model_body.rotation.y = camera_pivot.rotation.y
@@ -315,12 +318,34 @@ func update_model():
 		model_body.rotation.x += (velocity.normalized().y*PI*-0.5 - model_body.rotation.x) * 0.1
 		#model_body.rotation.x = velocity.normalized().y*PI*-0.5
 	
-	if in_water:
-		fish_animation.play("Animations/fish_test", 1.0)
-		#print("look here")
-		##fish_animation.current_animation = "Animation/fish_test"
-	elif not in_water:
-		fish_animation.play("Animations/Glide", 1.0)
+	var speed = velocity.length()
+	#print(velocity.length())
+	
+	fish_animation_tree.set("parameters/Swim/SwimSpeed/scale", speed * 0.0344)
+	
+	#if in_water:
+		#if (speed > 10 or direction):
+			#fish_animation_tree.set("parameters/SwimSpeed/scale", speed /29)
+			#if fish_animation.current_animation != "Animations/Swim" or 1==1:
+				##print("duh")
+				##print(fish_animation.current_animation)
+				##fish_animation.play("Animations/Swim", 1.0, 1.0)
+				##fish_animation_tree.set("parameters/Transition/transition_request", "swim")
+				#state_machine.travel("Animations_Swim")
+			##fish_animation.speed_scale = 1
+			##fish_animation_tree.tree_root.blend_animation("Animation/Swim")
+		#else:
+			#fish_animation.speed_scale = 1
+			##fish_animation.play("Animations/IdleWater", 2, 1.0)
+			##fish_animation_tree.set("parameters/Transition/transition_request", "idle")
+			#state_machine.travel("Animations_IdleWater")
+		##print("look here")
+		###fish_animation.current_animation = "Animation/fish_test"
+	#elif not in_water:
+		#fish_animation.speed_scale = 1
+		##fish_animation.play("Animations/Glide", 0.3, 1.0)
+		##fish_animation_tree.set("parameters/Transition/transition_request", "glide")
+		#state_machine.travel("Animations_Glide")
 
 
 
