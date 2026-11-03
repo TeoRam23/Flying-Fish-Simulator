@@ -25,6 +25,7 @@ var in_water := false
 var in_limbo := false
 var last_direction := Vector2.ZERO
 var last_pivot_rotation := Vector3.ZERO
+var direction := Vector2.ZERO
 
 var water_height = 0
 
@@ -42,6 +43,7 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	water_height = water.get_height(global_position)
+	direction = Input.get_vector("right", "left", "back", "forward")
 	
 	wave_update_counter += 1
 	if wave_update_counter >= 3:
@@ -68,7 +70,6 @@ func _physics_process(delta: float) -> void:
 	
 	
 	# Dette brukes i air movement, når vi ikke gjør noe skal den glide i siste retning vi så i. Må gjøre det utenform air_movement()
-	var direction = Input.get_vector("right", "left", "back", "forward")
 	if direction:
 		last_direction = direction
 		last_pivot_rotation = camera_pivot.rotation
@@ -104,7 +105,7 @@ func _physics_process(delta: float) -> void:
 func air_movement(delta):
 	velocity.y -= gravity * delta 
 	
-	var direction = Input.get_vector("right", "left", "back", "forward")
+
 	var pivot_rotation : Vector3
 	
 	if not direction:
@@ -214,7 +215,6 @@ func air_movement(delta):
 
 
 func new_water_movement(delta):
-	var direction = Input.get_vector("right", "left", "back", "forward")
 	var direction_vertical = Vector3(direction.x, 0, direction.y).rotated(Vector3.RIGHT, camera_pivot.rotation.x)
 	var direction_horizontal = Vector3(direction_vertical.x, 0, direction_vertical.z).rotated(Vector3.UP, camera_pivot.rotation.y)
 	
@@ -250,7 +250,6 @@ func new_water_movement(delta):
 		
 
 func water_movement(delta):
-	var direction = Input.get_vector("right", "left", "back", "forward")
 	var direction_vertical = Vector3(direction.x, 0, direction.y).rotated(Vector3.RIGHT, camera_pivot.rotation.x)
 	var direction_horizontal = Vector3(direction_vertical.x, 0, direction_vertical.z).rotated(Vector3.UP, camera_pivot.rotation.y)
 	
@@ -294,8 +293,7 @@ func water_movement(delta):
 
 func update_model():
 	var state_machine = fish_animation_tree["parameters/playback"]
-
-	var direction = Input.get_vector("right", "left", "back", "forward")
+	
 	if direction:
 		#model_body.rotation.y = camera_pivot.rotation.y
 		#model_body.rotation = model_body.rotation.move_toward(camera_pivot.rotation, 0.1)
@@ -319,9 +317,12 @@ func update_model():
 		#model_body.rotation.x = velocity.normalized().y*PI*-0.5
 	
 	var speed = velocity.length()
+	var animation_speed = speed * 0.0344
+	if animation_speed > 3:
+		animation_speed = 3
 	#print(velocity.length())
 	
-	fish_animation_tree.set("parameters/Swim/SwimSpeed/scale", speed * 0.0344)
+	fish_animation_tree.set("parameters/Swim/SwimSpeed/scale",animation_speed)
 	
 	#if in_water:
 		#if (speed > 10 or direction):
