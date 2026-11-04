@@ -9,6 +9,7 @@ extends CharacterBody3D
 @onready var fish_model: Node3D = $ModelBody/FishModel
 @onready var fish_animation: AnimationPlayer = $ModelBody/FishModel/FishAnimation
 @onready var fish_animation_tree: AnimationTree = $ModelBody/FishModel/FishAnimationTree
+@onready var liftoff_timer: Timer = $ModelBody/FishModel/LiftoffTimer
 
 @export var gravity := 50.0
 @export var bouyancy := 80.0
@@ -22,6 +23,7 @@ var current_boost := 0
 @export var movement_drag := 20.0
 
 var in_water := false
+var last_in_water := false
 var in_limbo := false
 var last_direction := Vector2.ZERO
 var last_pivot_rotation := Vector3.ZERO
@@ -96,11 +98,14 @@ func _physics_process(delta: float) -> void:
 
 	water_height_3d.global_position.y = water_height
 	
+	last_in_water = in_water
 	#
 	#if Input.is_action_pressed("forward"):
 		#velocity.z = speed * delta
 	#
 	#move_and_slide()
+	
+	
 
 func air_movement(delta):
 	velocity.y -= gravity * delta 
@@ -323,6 +328,22 @@ func update_model():
 	#print(velocity.length())
 	
 	fish_animation_tree.set("parameters/Swim/SwimSpeed/scale",animation_speed)
+	fish_animation_tree.set("parameters/Glide/SwimSpeed/scale",animation_speed)
+	
+	
+	## Styrer liftoff animasjonen
+	if last_in_water and not in_water:
+		print("LIFTOFF!")
+		liftoff_timer.start()
+	var tween = get_tree().create_tween()
+	fish_animation_tree.set("parameters/Glide/BlendLift/blend_amount", \
+	tween.interpolate_value(1.0, -1.0, liftoff_timer.wait_time - liftoff_timer.time_left, liftoff_timer.wait_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT))
+	tween.kill()
+	
+	
+	## Styrer hvor langt ut vingene er ute, bassert på tilt
+	fish_animation_tree.set("parameters/Glide/BlendGlide/blend_amount", abs(sin(model_body.rotation.x))**4.0)
+	
 	
 	#if in_water:
 		#if (speed > 10 or direction):

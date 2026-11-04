@@ -1,7 +1,7 @@
 @tool
 extends Node3D
 
-var clipmap_tile_size := 2.0 # Not the smallest tile size, but one that reduces the amount of vertex jitter.
+var clipmap_tile_size := 1.0 # Not the smallest tile size, but one that reduces the amount of vertex jitter.
 var previous_tile := Vector3i.MAX
 var should_render_imgui := not Engine.is_editor_hint()
 
